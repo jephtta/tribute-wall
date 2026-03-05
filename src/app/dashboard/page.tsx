@@ -50,7 +50,7 @@ export default function DashboardPage() {
         <Link href="/" className="text-xl font-bold tracking-tight">Tribute Wall</Link>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
-          <Button variant="ghost" size="sm" onClick={() => signOut(auth)}>
+          <Button variant="ghost" size="sm" onClick={() => signOut(auth)} aria-label="Sign out">
             <LogOut className="w-4 h-4" />
           </Button>
         </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,7 +116,7 @@ export default function CreateWallPage() {
                 <Label>Cover Image</Label>
                 <div className="flex items-center gap-4">
                   {coverImageUrl ? (
-                    <img src={coverImageUrl} alt="Cover preview" className="w-32 h-20 object-cover rounded-md" />
+                    <Image src={coverImageUrl} alt="Cover preview" width={128} height={80} className="w-32 h-20 object-cover rounded-md" />
                   ) : (
                     <div className="w-32 h-20 bg-muted rounded-md flex items-center justify-center text-muted-foreground">
                       <Upload className="w-6 h-6" />

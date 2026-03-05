@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -203,10 +204,11 @@ export default function WallPage() {
       {/* Cover Section */}
       <div className="relative h-64 md:h-80 bg-gradient-to-br from-zinc-800 to-zinc-900 overflow-hidden">
         {wall.coverImageUrl && (
-          <img
+          <Image
             src={wall.coverImageUrl}
             alt={wall.title}
-            className="absolute inset-0 w-full h-full object-cover opacity-70"
+            fill
+            className="object-cover opacity-70"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
@@ -248,9 +250,11 @@ export default function WallPage() {
                 {wall.galleryItems.map((item) => (
                   <div key={item.id} className="break-inside-avoid">
                     {item.type === "image" ? (
-                      <img
+                      <Image
                         src={item.url}
                         alt={item.alt || "Gallery image"}
+                        width={400}
+                        height={300}
                         className="w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => setLightboxUrl(item.url)}
                       />
@@ -357,15 +361,15 @@ export default function WallPage() {
                         <div className="flex items-center gap-1">
                           {isCreator && (
                             <>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handlePin(tribute.id)}>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handlePin(tribute.id)} aria-label={isPinned ? "Unpin tribute" : "Pin tribute"}>
                                 <Pin className={`w-4 h-4 ${isPinned ? "text-primary" : ""}`} />
                               </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(tribute.id)}>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(tribute.id)} aria-label="Delete tribute">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </>
                           )}
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowReportDialog(tribute.id)}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowReportDialog(tribute.id)} aria-label="Report tribute">
                             <Flag className="w-4 h-4" />
                           </Button>
                         </div>
@@ -375,7 +379,7 @@ export default function WallPage() {
                         <div className="mt-3 flex gap-2 flex-wrap">
                           {tribute.mediaUrls.map((m, i) => (
                             m.type === "image" ? (
-                              <img key={i} src={m.url} alt="" className="w-24 h-24 object-cover rounded-md cursor-pointer" onClick={() => setLightboxUrl(m.url)} />
+                              <Image key={i} src={m.url} alt="Tribute media" width={96} height={96} className="w-24 h-24 object-cover rounded-md cursor-pointer" onClick={() => setLightboxUrl(m.url)} />
                             ) : (
                               <video key={i} src={m.url} className="w-24 h-24 object-cover rounded-md" controls />
                             )
@@ -417,7 +421,7 @@ export default function WallPage() {
           <div className="space-y-4">
             <div className="flex gap-2">
               <Input value={wallUrl} readOnly className="flex-1" />
-              <Button onClick={copyLink} variant="outline">
+              <Button onClick={copyLink} variant="outline" aria-label="Copy link">
                 <Copy className="w-4 h-4" />
               </Button>
             </div>
@@ -470,18 +474,25 @@ export default function WallPage() {
       {/* Lightbox */}
       {lightboxUrl && (
         <div
+          role="dialog"
+          aria-label="Image preview"
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={() => setLightboxUrl(null)}
+          onKeyDown={(e) => { if (e.key === "Escape") setLightboxUrl(null); }}
+          tabIndex={0}
         >
           <Button
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 text-white"
             onClick={() => setLightboxUrl(null)}
+            aria-label="Close image preview"
           >
             <X className="w-6 h-6" />
           </Button>
-          <img src={lightboxUrl} alt="" className="max-w-full max-h-full object-contain rounded-lg" />
+          <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
+            <Image src={lightboxUrl} alt="Full size image" fill className="object-contain rounded-lg" />
+          </div>
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -327,7 +328,7 @@ export default function WallDashboardPage() {
                           <span>{new Date(t.createdAt).toLocaleString()}</span>
                         </div>
                       </div>
-                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleTributeAction(t.id, "delete")}>
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleTributeAction(t.id, "delete")} aria-label="Delete tribute">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -361,7 +362,7 @@ export default function WallDashboardPage() {
                 {wall.galleryItems.map((item) => (
                   <div key={item.id} className="relative group">
                     {item.type === "image" ? (
-                      <img src={item.url} alt={item.alt} className="w-full aspect-square object-cover rounded-lg" />
+                      <Image src={item.url} alt={item.alt} width={200} height={200} className="w-full aspect-square object-cover rounded-lg" />
                     ) : (
                       <video src={item.url} className="w-full aspect-square object-cover rounded-lg" />
                     )}
@@ -370,6 +371,7 @@ export default function WallDashboardPage() {
                       variant="destructive"
                       className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => removeGalleryItem(item.id)}
+                      aria-label="Remove gallery item"
                     >
                       <X className="w-3 h-3" />
                     </Button>
