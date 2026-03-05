@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, adminAuth } from "@/lib/firebase-admin";
 import type { TributeStatus } from "@/lib/types";
 
 const RATE_LIMIT_WINDOW = 60_000;
@@ -76,12 +76,27 @@ export async function GET(
     const { wallId } = await params;
     const showAll = req.nextUrl.searchParams.get("all") === "true";
 
+    // Only wall creator can see all tributes (including pending/hidden/rejected)
+    let isOwner = false;
+    if (showAll) {
+      const token = req.headers.get("authorization")?.replace("Bearer ", "");
+      if (token) {
+        try {
+          const decoded = await adminAuth.verifyIdToken(token);
+          const wallDoc = await adminDb.collection("walls").doc(wallId).get();
+          isOwner = wallDoc.exists && wallDoc.data()!.creatorId === decoded.uid;
+        } catch {
+          // Invalid token — treat as non-owner
+        }
+      }
+    }
+
     let query = adminDb
       .collection("tributes")
       .where("wallId", "==", wallId)
       .orderBy("createdAt", "desc");
 
-    if (!showAll) {
+    if (!isOwner) {
       query = query.where("status", "in", ["published"]);
     }
 

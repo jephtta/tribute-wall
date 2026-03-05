@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Walls: creator can read/write their own; anyone can read published walls
+    match /walls/{wallId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.creatorId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                            && resource.data.creatorId == request.auth.uid;
+    }
+
+    // Tributes: anyone can read published; anyone can create; only wall creator can modify/delete
+    match /tributes/{tributeId} {
+      allow read: if resource.data.status == 'published'
+                  || (request.auth != null && exists(/databases/$(database)/documents/walls/$(resource.data.wallId))
+                      && get(/databases/$(database)/documents/walls/$(resource.data.wallId)).data.creatorId == request.auth.uid);
+      allow create: if true;
+      allow update, delete: if request.auth != null
+                            && exists(/databases/$(database)/documents/walls/$(resource.data.wallId))
+                            && get(/databases/$(database)/documents/walls/$(resource.data.wallId)).data.creatorId == request.auth.uid;
+    }
+
+    // Reports: anyone can create; no one reads via client SDK
+    match /reports/{reportId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

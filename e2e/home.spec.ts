@@ -19,14 +19,30 @@ test.describe("Home Page", () => {
 
   test("should navigate to sign in page", async ({ page }) => {
     await page.goto("/");
-    await page.click("text=Sign In");
+    await page.locator("text=Sign In").click();
     await expect(page).toHaveURL("/auth/signin");
   });
 
   test("should navigate to create page (redirects to signin when unauthenticated)", async ({ page }) => {
     await page.goto("/");
-    await page.click("text=Create a Wall");
-    // Create page redirects to signin since user is not authenticated
+    await page.locator("text=Create a Wall").click();
     await expect(page).toHaveURL(/\/(create|auth\/signin)/);
+  });
+
+  test("should display feature cards (Create, Share, Celebrate)", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("h3", { hasText: "Create" })).toBeVisible();
+    await expect(page.locator("h3", { hasText: "Share" })).toBeVisible();
+    await expect(page.locator("h3", { hasText: "Celebrate" })).toBeVisible();
+  });
+
+  test("should display footer", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("footer")).toContainText("Built with love");
+  });
+
+  test("should display Tribute Wall brand in header", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("header").locator("text=Tribute Wall")).toBeVisible();
   });
 });

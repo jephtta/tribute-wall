@@ -9,8 +9,29 @@ const MAX_VIDEO_SIZE = 200 * 1024 * 1024; // 200MB
 const MAX_CREATOR_IMAGE_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_CREATOR_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB
 
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 10;
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json({ error: "Too many uploads" }, { status: 429 });
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const context = formData.get("context") as string | null; // "gallery" or "tribute" or "cover"

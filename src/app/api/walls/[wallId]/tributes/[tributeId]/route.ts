@@ -18,10 +18,18 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const allowedFields = ["status"];
     const updates: Record<string, unknown> = {};
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) updates[field] = body[field];
+
+    if (body.status !== undefined) {
+      const validStatuses = ["published", "pending", "rejected", "hidden"];
+      if (!validStatuses.includes(body.status)) {
+        return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
+      }
+      updates.status = body.status;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
     await adminDb.collection("tributes").doc(tributeId).update(updates);
